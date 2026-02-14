@@ -1,12 +1,8 @@
-const CACHE_NAME = 'druckkosten-v1.9.5';
+const CACHE_NAME = 'druckkosten-v1.9.6';
 const ASSETS = [
   './',
   './index.html',
-  'https://unpkg.com/react@18/umd/react.production.min.js',
-  'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-  'https://unpkg.com/@babel/standalone/babel.min.js',
-  'https://cdn.tailwindcss.com',
-  'https://unpkg.com/lucide@latest'
+  './manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
