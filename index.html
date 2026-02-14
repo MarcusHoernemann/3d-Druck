@@ -104,7 +104,13 @@
                 if (exists >= 0) newDb[type][exists] = entry;
                 else newDb[type].push(entry);
                 setDb(newDb);
-                alert(`${item.name} gespeichert!`);
+            };
+
+            const deleteFromDB = (type, name) => {
+                if (!name) return;
+                const newDb = { ...db };
+                newDb[type] = newDb[type].filter(item => item.name !== name);
+                setDb(newDb);
             };
 
             const applyPreset = (type, index, presetName, slotSetter, currentSlots) => {
@@ -159,7 +165,7 @@
                     <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 px-4 h-16 flex items-center justify-between shadow-md text-white">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center shadow-lg"><Icon name="printer" className="text-slate-800" /></div>
-                            <h1 className="text-lg font-black tracking-tighter uppercase">Druckkosten <span className="text-slate-400 font-bold">V1.9.5</span></h1>
+                            <h1 className="text-lg font-black tracking-tighter uppercase">Druckkosten <span className="text-slate-400 font-bold">V1.9.6</span></h1>
                         </div>
                         <div className="flex gap-2">
                             <button onClick={exportData} className="bg-slate-700 hover:bg-slate-600 text-[10px] font-bold py-1.5 px-3 rounded-lg flex items-center gap-2 transition-all"><Icon name="save" size={14} /> Backup</button>
@@ -176,18 +182,22 @@
 
                     <main className="max-w-5xl mx-auto w-full p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">
+                            
                             <section className="bg-slate-200 rounded-3xl p-6 border border-slate-300 card-shadow">
                                 <div className="flex items-center gap-3 mb-5"><Icon name="package" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Filament</h2></div>
                                 {fdmSlots.map((m, i) => (
                                     <div key={i} className={`grid grid-cols-12 gap-3 items-center p-3 rounded-2xl border mb-3 transition-all ${m.active ? 'bg-slate-300 border-slate-400 shadow-sm' : 'opacity-40 border-slate-300'}`}>
                                         <div className="col-span-4 space-y-1">
-                                            <select className="w-full bg-slate-100 text-[10px] font-bold py-1 px-1 rounded border border-slate-400" onChange={(e) => applyPreset('filament', i, e.target.value, setFdmSlots, fdmSlots)}>
-                                                <option value="">Wählen...</option>
-                                                {db.filament.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                                            </select>
+                                            <div className="flex gap-1">
+                                                <select className="w-full bg-slate-100 text-[10px] font-bold py-1 px-1 rounded border border-slate-400" onChange={(e) => applyPreset('filament', i, e.target.value, setFdmSlots, fdmSlots)} value="">
+                                                    <option value="">Wählen...</option>
+                                                    {db.filament.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                                                </select>
+                                                <button onClick={() => deleteFromDB('filament', m.name)} className="bg-red-900/20 text-red-700 p-1 rounded hover:bg-red-700 hover:text-white transition-colors"><Icon name="trash-2" size={12} /></button>
+                                            </div>
                                             <div className="flex gap-1">
                                                 <input value={m.name} onChange={e => {const n = [...fdmSlots]; n[i].name = e.target.value; setFdmSlots(n);}} className="w-full bg-slate-100 border-2 border-slate-400 rounded px-2 py-1 text-[11px] font-bold outline-none" placeholder="Name..." />
-                                                <button onClick={() => saveToDB('filament', m)} className="bg-slate-600 text-white p-1 rounded hover:bg-slate-800"><Icon name="save" size={12} /></button>
+                                                <button onClick={() => saveToDB('filament', m)} className="bg-slate-600 text-white p-1 rounded hover:bg-slate-800 transition-colors"><Icon name="save" size={12} /></button>
                                             </div>
                                         </div>
                                         <div className="col-span-2"><InlineInput label="Spule" value={m.weightGrams} onChange={v => {const n = [...fdmSlots]; n[i].weightGrams = v; setFdmSlots(n);}} suffix="g" /></div>
@@ -203,12 +213,15 @@
                                     <div className="flex items-center gap-3 mb-5"><Icon name={mat.icon} className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">{mat.title}</h2></div>
                                     <div className={`grid grid-cols-12 gap-3 items-center p-3 rounded-2xl border transition-all ${mat.state.active ? 'bg-slate-300 border-slate-400 shadow-sm' : 'opacity-40 border-slate-300'}`}>
                                         <div className="col-span-4 space-y-1">
-                                            <select className="w-full bg-slate-100 text-[10px] font-bold py-1 px-1 rounded border border-slate-400" onChange={(e) => applyPreset(mat.type, 0, e.target.value, mat.set, mat.state)}>
-                                                <option value="">Wählen...</option>
-                                                {db[mat.type].map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                                            </select>
                                             <div className="flex gap-1">
-                                                <input value={mat.state.name} onChange={e => mat.set({...mat.state, name: e.target.value})} className="w-full bg-slate-100 border-2 border-slate-400 rounded px-2 py-1 text-[11px] font-bold outline-none" />
+                                                <select className="w-full bg-slate-100 text-[10px] font-bold py-1 px-1 rounded border border-slate-400" onChange={(e) => applyPreset(mat.type, 0, e.target.value, mat.set, mat.state)} value="">
+                                                    <option value="">Wählen...</option>
+                                                    {db[mat.type].map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                                                </select>
+                                                <button onClick={() => deleteFromDB(mat.type, mat.state.name)} className="bg-red-900/20 text-red-700 p-1 rounded hover:bg-red-700 hover:text-white transition-colors"><Icon name="trash-2" size={12} /></button>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <input value={mat.state.name} onChange={e => mat.set({...mat.state, name: e.target.value})} className="w-full bg-slate-100 border-2 border-slate-400 rounded px-2 py-1 text-[11px] font-bold outline-none" placeholder="Name..." />
                                                 <button onClick={() => saveToDB(mat.type, mat.state)} className="bg-slate-600 text-white p-1 rounded hover:bg-slate-800"><Icon name="save" size={12} /></button>
                                             </div>
                                         </div>
@@ -225,13 +238,16 @@
                                 {otherMaterials.map((m, i) => (
                                     <div key={i} className={`grid grid-cols-12 gap-3 items-center p-3 rounded-2xl border mb-3 transition-all ${m.active ? 'bg-slate-300 border-slate-400 shadow-sm' : 'opacity-40 border-slate-300'}`}>
                                         <div className="col-span-6 space-y-1">
-                                            <select className="w-full bg-slate-100 text-[10px] font-bold py-1 px-1 rounded border border-slate-400" onChange={(e) => applyPreset('other', i, e.target.value, setOtherMaterials, otherMaterials)}>
-                                                <option value="">Wählen...</option>
-                                                {db.other.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                                            </select>
                                             <div className="flex gap-1">
-                                                <input value={m.name} onChange={e => {const n = [...otherMaterials]; n[i].name = e.target.value; setOtherMaterials(n);}} className="w-full bg-slate-100 border-2 border-slate-400 rounded px-2 py-1 text-[11px] font-bold outline-none" />
-                                                <button onClick={() => saveToDB('other', m)} className="bg-slate-600 text-white p-1 rounded hover:bg-slate-800"><Icon name="save" size={12} /></button>
+                                                <select className="w-full bg-slate-100 text-[10px] font-bold py-1 px-1 rounded border border-slate-400" onChange={(e) => applyPreset('other', i, e.target.value, setOtherMaterials, otherMaterials)} value="">
+                                                    <option value="">Wählen...</option>
+                                                    {db.other.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                                                </select>
+                                                <button onClick={() => deleteFromDB('other', m.name)} className="bg-red-900/20 text-red-700 p-1 rounded hover:bg-red-700 hover:text-white transition-colors"><Icon name="trash-2" size={12} /></button>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <input value={m.name} onChange={e => {const n = [...otherMaterials]; n[i].name = e.target.value; setOtherMaterials(n);}} className="w-full bg-slate-100 border-2 border-slate-400 rounded px-2 py-1 text-[11px] font-bold outline-none" placeholder="Name..." />
+                                                <button onClick={() => saveToDB('other', m)} className="bg-slate-600 text-white p-1 rounded hover:bg-slate-800 transition-colors"><Icon name="save" size={12} /></button>
                                             </div>
                                         </div>
                                         <div className="col-span-5"><InlineInput label="Preis" value={m.price} onChange={v => {const n = [...otherMaterials]; n[i].price = v; setOtherMaterials(n);}} suffix="€" /></div>
@@ -242,17 +258,14 @@
 
                             <section className="bg-slate-200 rounded-3xl p-6 border border-slate-300 card-shadow">
                                 <div className="flex items-center gap-3 mb-5"><Icon name="user" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Arbeitszeit</h2></div>
-                                <div className="grid grid-cols-12 gap-3 items-center p-3 rounded-2xl border bg-slate-300 border-slate-400">
-                                    <div className="col-span-6"><InlineInput label="Stundensatz" value={job.laborRate} onChange={v => setJob({...job, laborRate: v})} suffix="€/h" bordered /></div>
-                                    <div className="col-span-6"><InlineInput label="Zeit" value={job.laborMinutes} onChange={v => setJob({...job, laborMinutes: v})} suffix="Min" bordered /></div>
-                                </div>
+                                <div className="grid grid-cols-2 gap-6"><InlineInput label="Stundensatz" value={job.laborRate} onChange={v => setJob({...job, laborRate: v})} suffix="€/h" bordered /><InlineInput label="Zeit" value={job.laborMinutes} onChange={v => setJob({...job, laborMinutes: v})} suffix="Min" bordered /></div>
                             </section>
 
                             <section className="bg-slate-200 rounded-3xl p-6 border border-slate-300 card-shadow">
-                                <div className="flex justify-between items-center mb-6"><div className="flex items-center gap-3"><Icon name="settings" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Maschinen</h2></div><div className="bg-slate-300 px-4 py-1.5 rounded-xl border border-slate-400 flex items-center gap-2 shadow-inner"><span className="text-[10px] font-black text-slate-500 uppercase text-center">Strom kWh:</span><input type="number" step="0.01" value={globalSettings.electricityPriceKWh} onChange={(e) => setGlobalSettings({...globalSettings, electricityPriceKWh: parseFloat(e.target.value) || 0})} className="w-14 bg-transparent text-[11px] font-black text-slate-800 outline-none text-center" /></div></div>
+                                <div className="flex justify-between items-center mb-6"><div className="flex items-center gap-3"><Icon name="settings" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Maschinen</h2></div><div className="bg-slate-300 px-4 py-1.5 rounded-xl border border-slate-400 flex items-center gap-2 shadow-inner"><span className="text-[10px] font-black text-slate-600 uppercase">Strom kWh:</span><input type="number" step="0.01" value={globalSettings.electricityPriceKWh} onChange={(e) => setGlobalSettings({...globalSettings, electricityPriceKWh: parseFloat(e.target.value) || 0})} className="w-14 bg-transparent text-[11px] font-black text-slate-800 outline-none text-center" /></div></div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {[ { label: 'FDM Printer', state: printerFdm, set: setPrinterFdm, unit: 'Std' }, { label: 'Resin Printer', state: printerResin, set: setPrinterResin, unit: 'Std' }, { label: 'Wash & Cure', state: washCure, set: setWashCure, unit: 'Min' } ].map((dev, i) => (
-                                        <div key={i} className={`p-4 rounded-2xl border ${dev.state.active ? 'bg-slate-300 border-slate-400 shadow-sm' : 'opacity-40 border-slate-300 bg-slate-200'}`}>
+                                        <div key={i} className={`p-4 rounded-2xl border transition-all ${dev.state.active ? 'bg-slate-300 border-slate-400 shadow-sm' : 'opacity-40 border-slate-300 bg-slate-200'}`}>
                                             <div className="flex justify-between items-center mb-4 text-[10px] font-black text-slate-600 uppercase tracking-tighter"><span>{dev.label}</span><button onClick={() => dev.set({...dev.state, active: !dev.state.active})} className={`w-7 h-7 rounded-lg flex items-center justify-center shadow-sm ${dev.state.active ? 'bg-slate-800 text-white' : 'bg-slate-400 text-slate-600'}`}><Icon name="power" size={14} /></button></div>
                                             <div className="space-y-3">
                                                 <InlineInput label="Preis €" value={dev.state.purchasePrice} onChange={v => dev.set({...dev.state, purchasePrice: v})} disabled={!dev.state.active} />
@@ -273,7 +286,7 @@
                                     {results.parts.filament > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Filament</span><span className="text-white">{results.parts.filament.toFixed(2)} €</span></div>}
                                     {results.parts.resin > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Resin</span><span className="text-white">{results.parts.resin.toFixed(2)} €</span></div>}
                                     {results.parts.uvHarz > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>UV-Harz</span><span className="text-white">{results.parts.uvHarz.toFixed(2)} €</span></div>}
-                                    {results.parts.other > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Verbrauch</span><span className="text-white">{results.parts.other.toFixed(2)} €</span></div>}
+                                    {results.parts.other > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Verbrauchsmaterial</span><span className="text-white">{results.parts.other.toFixed(2)} €</span></div>}
                                     {results.parts.op > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Betrieb</span><span className="text-white">{results.parts.op.toFixed(2)} €</span></div>}
                                     {results.parts.labor > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Arbeitszeit</span><span className="text-white">{results.parts.labor.toFixed(2)} €</span></div>}
                                     <div className="flex justify-between pt-6 text-2xl font-black uppercase text-white"><span>Gesamt</span><span className="text-indigo-400">{results.total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></div>
@@ -281,7 +294,9 @@
                             </div>
                         </div>
                     </main>
-                    <footer className="mt-auto py-8 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest">© {new Date().getFullYear()} Marcus Hörnemann — V1.9.5</footer>
+                    <footer className="mt-auto py-8 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-300/50 border-t border-slate-400/30">
+                        © {new Date().getFullYear()} Marcus Hörnemann — V1.9.6
+                    </footer>
                 </div>
             );
         }
