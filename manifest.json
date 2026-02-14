@@ -1,0 +1,17 @@
+{
+  "name": "3D DruckKosten Kalkulator",
+  "short_name": "DruckKosten",
+  "description": "Präziser Kalkulator für FDM- und Resin-Druckkosten",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#cbd5e1",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3569/3569998.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
