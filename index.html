@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>3D DruckKosten Kalkulator</title>
-    <meta name="theme-color" content="#cbd5e1">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#1e293b">
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -58,7 +59,6 @@
                 try { return saved ? JSON.parse(saved) : def; } catch (e) { return def; }
             };
 
-            // Material-Datenbank
             const [db, setDb] = useState(() => load('materialDB', {
                 filament: [{name: 'PLA Basic', weight: 1000, price: 19.99}],
                 resin: [{name: 'Resin Standard', weight: 1000, price: 35.00}],
@@ -66,7 +66,6 @@
                 other: [{name: 'Handschuhe', price: 0.50}]
             }));
 
-            // Aktive Slots - Initialisierung korrigiert auf 4
             const [fdmSlots, setFdmSlots] = useState(() => {
                 const saved = load('fdmSlots', null);
                 if (saved && saved.length >= 4) return saved;
@@ -137,7 +136,6 @@
                 const matUv = uvResin.active ? (n(uvResin.used) * (n(uvResin.price) / Math.max(1, n(uvResin.bottleSize)))) : 0;
                 const matOther = otherMaterials.reduce((acc, m) => m.active ? acc + n(m.price) : acc, 0);
                 const elecPrice = n(globalSettings.electricityPriceKWh);
-                
                 const calcDev = (dev) => {
                     if (!dev.active) return { elec: 0, depr: 0 };
                     const h = n(dev.hours || 0);
@@ -148,7 +146,6 @@
                     const h = n(dev.minutes || 0) / 60;
                     return { elec: (n(dev.watts) / 1000) * h * elecPrice, depr: (n(dev.purchasePrice) / Math.max(1, n(dev.lifespan))) * h };
                 };
-                
                 const fdmOp = calcDev(printerFdm); const resinOp = calcDev(printerResin); const washOp = calcWash(washCure);
                 const totalElec = fdmOp.elec + resinOp.elec + washOp.elec;
                 const totalDepr = fdmOp.depr + resinOp.depr + washOp.depr;
@@ -179,8 +176,6 @@
 
                     <main className="max-w-5xl mx-auto w-full p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">
-                            
-                            {/* Filament Sektion mit 4 Slots */}
                             <section className="bg-slate-200 rounded-3xl p-6 border border-slate-300 card-shadow">
                                 <div className="flex items-center gap-3 mb-5"><Icon name="package" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Filament</h2></div>
                                 {fdmSlots.map((m, i) => (
@@ -192,7 +187,7 @@
                                             </select>
                                             <div className="flex gap-1">
                                                 <input value={m.name} onChange={e => {const n = [...fdmSlots]; n[i].name = e.target.value; setFdmSlots(n);}} className="w-full bg-slate-100 border-2 border-slate-400 rounded px-2 py-1 text-[11px] font-bold outline-none" placeholder="Name..." />
-                                                <button onClick={() => saveToDB('filament', m)} className="bg-slate-600 text-white p-1 rounded hover:bg-slate-800 transition-colors"><Icon name="save" size={12} /></button>
+                                                <button onClick={() => saveToDB('filament', m)} className="bg-slate-600 text-white p-1 rounded hover:bg-slate-800"><Icon name="save" size={12} /></button>
                                             </div>
                                         </div>
                                         <div className="col-span-2"><InlineInput label="Spule" value={m.weightGrams} onChange={v => {const n = [...fdmSlots]; n[i].weightGrams = v; setFdmSlots(n);}} suffix="g" /></div>
@@ -203,7 +198,6 @@
                                 ))}
                             </section>
 
-                            {/* Resin & UV */}
                             {[ { state: resinMaterial, set: setResinMaterial, type: 'resin', title: 'Resin', icon: 'droplet' }, { state: uvResin, set: setUvResin, type: 'uv', title: 'UV Harz', icon: 'sun' } ].map((mat, i) => (
                                 <section key={i} className="bg-slate-200 rounded-3xl p-6 border border-slate-300 card-shadow">
                                     <div className="flex items-center gap-3 mb-5"><Icon name={mat.icon} className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">{mat.title}</h2></div>
@@ -226,7 +220,6 @@
                                 </section>
                             ))}
 
-                            {/* Verbrauchsmaterial */}
                             <section className="bg-slate-200 rounded-3xl p-6 border border-slate-300 card-shadow">
                                 <div className="flex items-center gap-3 mb-5"><Icon name="shopping-cart" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Verbrauchsmaterial</h2></div>
                                 {otherMaterials.map((m, i) => (
@@ -242,12 +235,11 @@
                                             </div>
                                         </div>
                                         <div className="col-span-5"><InlineInput label="Preis" value={m.price} onChange={v => {const n = [...otherMaterials]; n[i].price = v; setOtherMaterials(n);}} suffix="€" /></div>
-                                        <div className="col-span-1 flex justify-end pt-3"><button onClick={() => {const n = [...otherMaterials]; n[i].active = !n[i].active; setOtherMaterials(n);}} className={`w-8 h-8 rounded-xl flex items-center justify-center ${m.active ? 'bg-slate-800 text-white' : 'bg-slate-400 text-slate-600'}`}><Icon name="power" size={16} /></button></div>
+                                        <div className="col-span-1 flex justify-end pt-3"><button onClick={() => {const n = [...otherMaterials]; n[i].active = !n[i].active; setOtherMaterials(n);}} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${m.active ? 'bg-slate-800 text-white' : 'bg-slate-400 text-slate-600'}`}><Icon name="power" size={16} /></button></div>
                                     </div>
                                 ))}
                             </section>
 
-                            {/* Arbeitszeit */}
                             <section className="bg-slate-200 rounded-3xl p-6 border border-slate-300 card-shadow">
                                 <div className="flex items-center gap-3 mb-5"><Icon name="user" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Arbeitszeit</h2></div>
                                 <div className="grid grid-cols-12 gap-3 items-center p-3 rounded-2xl border bg-slate-300 border-slate-400">
@@ -256,13 +248,12 @@
                                 </div>
                             </section>
 
-                            {/* Maschinen */}
                             <section className="bg-slate-200 rounded-3xl p-6 border border-slate-300 card-shadow">
-                                <div className="flex justify-between items-center mb-6"><div className="flex items-center gap-3"><Icon name="settings" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Maschinen & Energie</h2></div><div className="bg-slate-300 px-4 py-1.5 rounded-xl border border-slate-400 flex items-center gap-2 shadow-inner"><span className="text-[10px] font-black text-slate-500 uppercase text-center">Strom kWh:</span><input type="number" step="0.01" value={globalSettings.electricityPriceKWh} onChange={(e) => setGlobalSettings({...globalSettings, electricityPriceKWh: parseFloat(e.target.value) || 0})} className="w-14 bg-transparent text-[11px] font-black text-slate-800 outline-none text-center" /></div></div>
+                                <div className="flex justify-between items-center mb-6"><div className="flex items-center gap-3"><Icon name="settings" className="text-slate-500" /><h2 className="font-black text-slate-800 uppercase tracking-widest text-sm">Maschinen</h2></div><div className="bg-slate-300 px-4 py-1.5 rounded-xl border border-slate-400 flex items-center gap-2 shadow-inner"><span className="text-[10px] font-black text-slate-500 uppercase text-center">Strom kWh:</span><input type="number" step="0.01" value={globalSettings.electricityPriceKWh} onChange={(e) => setGlobalSettings({...globalSettings, electricityPriceKWh: parseFloat(e.target.value) || 0})} className="w-14 bg-transparent text-[11px] font-black text-slate-800 outline-none text-center" /></div></div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {[ { label: 'FDM Printer', state: printerFdm, set: setPrinterFdm, unit: 'Std' }, { label: 'Resin Printer', state: printerResin, set: setPrinterResin, unit: 'Std' }, { label: 'Wash & Cure', state: washCure, set: setWashCure, unit: 'Min' } ].map((dev, i) => (
-                                        <div key={i} className={`p-4 rounded-2xl border transition-all ${dev.state.active ? 'bg-slate-300 border-slate-400 shadow-sm' : 'opacity-40 border-slate-300 bg-slate-200'}`}>
-                                            <div className="flex justify-between items-center mb-4 text-[10px] font-black text-slate-600 uppercase"><span>{dev.label}</span><button onClick={() => dev.set({...dev.state, active: !dev.state.active})} className={`w-7 h-7 rounded-lg flex items-center justify-center shadow-sm ${dev.state.active ? 'bg-slate-800 text-white' : 'bg-slate-400 text-slate-600'}`}><Icon name="power" size={14} /></button></div>
+                                        <div key={i} className={`p-4 rounded-2xl border ${dev.state.active ? 'bg-slate-300 border-slate-400 shadow-sm' : 'opacity-40 border-slate-300 bg-slate-200'}`}>
+                                            <div className="flex justify-between items-center mb-4 text-[10px] font-black text-slate-600 uppercase tracking-tighter"><span>{dev.label}</span><button onClick={() => dev.set({...dev.state, active: !dev.state.active})} className={`w-7 h-7 rounded-lg flex items-center justify-center shadow-sm ${dev.state.active ? 'bg-slate-800 text-white' : 'bg-slate-400 text-slate-600'}`}><Icon name="power" size={14} /></button></div>
                                             <div className="space-y-3">
                                                 <InlineInput label="Preis €" value={dev.state.purchasePrice} onChange={v => dev.set({...dev.state, purchasePrice: v})} disabled={!dev.state.active} />
                                                 <InlineInput label="Leben h" value={dev.state.lifespan} onChange={v => dev.set({...dev.state, lifespan: v})} disabled={!dev.state.active} />
@@ -275,7 +266,6 @@
                             </section>
                         </div>
 
-                        {/* Resultat Bereich */}
                         <div className="space-y-6">
                             <div className="bg-slate-800 rounded-[2.5rem] p-8 text-white shadow-2xl sticky top-24 border border-slate-700 overflow-hidden">
                                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mb-6 border-b border-slate-700 pb-2">Kostenaufstellung</p>
@@ -283,23 +273,27 @@
                                     {results.parts.filament > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Filament</span><span className="text-white">{results.parts.filament.toFixed(2)} €</span></div>}
                                     {results.parts.resin > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Resin</span><span className="text-white">{results.parts.resin.toFixed(2)} €</span></div>}
                                     {results.parts.uvHarz > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>UV-Harz</span><span className="text-white">{results.parts.uvHarz.toFixed(2)} €</span></div>}
-                                    {results.parts.other > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Verbrauchsmaterial</span><span className="text-white">{results.parts.other.toFixed(2)} €</span></div>}
-                                    {results.parts.op > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Strom & Verschleiß</span><span className="text-white">{results.parts.op.toFixed(2)} €</span></div>}
+                                    {results.parts.other > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Verbrauch</span><span className="text-white">{results.parts.other.toFixed(2)} €</span></div>}
+                                    {results.parts.op > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Betrieb</span><span className="text-white">{results.parts.op.toFixed(2)} €</span></div>}
                                     {results.parts.labor > 0 && <div className="flex justify-between border-b border-slate-700 pb-2"><span>Arbeitszeit</span><span className="text-white">{results.parts.labor.toFixed(2)} €</span></div>}
                                     <div className="flex justify-between pt-6 text-2xl font-black uppercase text-white"><span>Gesamt</span><span className="text-indigo-400">{results.total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></div>
                                 </div>
                             </div>
                         </div>
                     </main>
-                    <footer className="mt-auto py-8 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-300/50 border-t border-slate-400/30">
-                        © {new Date().getFullYear()} Marcus Hörnemann — V1.9.5
-                    </footer>
+                    <footer className="mt-auto py-8 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest">© {new Date().getFullYear()} Marcus Hörnemann — V1.9.5</footer>
                 </div>
             );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
     </script>
 </body>
 </html>
