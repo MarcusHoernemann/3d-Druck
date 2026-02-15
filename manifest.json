@@ -1,22 +1,35 @@
 {
-  "name": "3D DruckKosten Kalkulator",
   "short_name": "DruckKosten",
-  "description": "Kalkulator für FDM- und Resin-Druckkosten",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#cbd5e1",
-  "theme_color": "#1e293b",
+  "name": "3D DruckKosten Kalkulator",
   "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "start_url": "./index.html",
+  "background_color": "#1e293b",
+  "display": "standalone",
+  "theme_color": "#1e293b",
+  "orientation": "portrait"
 }
