@@ -39,22 +39,46 @@
             return <i data-lucide={name} style={{ width: size, height: size }} className={`inline-block ${className}`}></i>;
         };
 
-        const InlineInput = ({ label, value, onChange, placeholder, suffix = "", disabled = false, bordered = false }) => (
-            <div className={`flex flex-col w-full ${disabled ? 'opacity-30' : ''}`}>
-                {label && <label className="text-[8px] font-black text-slate-500 uppercase px-1 mb-0.5 truncate">{label}</label>}
-                <div className="relative">
-                    <input 
-                        type="number" 
-                        value={value === 0 ? "" : value}
-                        disabled={disabled}
-                        placeholder={placeholder || "0"}
-                        onChange={(e) => onChange(e.target.value === "" ? 0 : parseFloat(e.target.value))}
-                        className={`w-full bg-slate-100 text-slate-900 ${bordered ? 'border-2 border-slate-400' : 'border border-slate-300'} rounded-lg py-2 px-2 text-[13px] font-bold outline-none focus:ring-2 focus:ring-slate-400 transition-all text-center`}
-                    />
-                    {suffix && <span className="absolute right-1.5 bottom-0.5 text-[7px] font-black text-slate-400 uppercase">{suffix}</span>}
+        const InlineInput = ({ label, value, onChange, placeholder, suffix = "", disabled = false, bordered = false }) => {
+            // Interner State für den String-Wert, um Dezimalpunkt-Eingaben (0.03) zu erlauben
+            const [displayValue, setDisplayValue] = useState(value === 0 ? "" : value.toString());
+
+            useEffect(() => {
+                const numericValue = value === 0 ? "" : value.toString();
+                if (parseFloat(displayValue) !== value) {
+                    setDisplayValue(numericValue);
+                }
+            }, [value]);
+
+            const handleChange = (e) => {
+                const val = e.target.value.replace(',', '.');
+                setDisplayValue(val);
+                if (val === "" || val === ".") {
+                    onChange(0);
+                } else {
+                    const parsed = parseFloat(val);
+                    if (!isNaN(parsed)) onChange(parsed);
+                }
+            };
+
+            return (
+                <div className={`flex flex-col w-full ${disabled ? 'opacity-30' : ''}`}>
+                    {label && <label className="text-[8px] font-black text-slate-500 uppercase px-1 mb-0.5 truncate">{label}</label>}
+                    <div className="relative">
+                        <input 
+                            type="text" 
+                            inputMode="decimal"
+                            value={displayValue}
+                            disabled={disabled}
+                            placeholder={placeholder || "0"}
+                            onChange={handleChange}
+                            className={`w-full bg-slate-100 text-slate-900 ${bordered ? 'border-2 border-slate-400' : 'border border-slate-300'} rounded-lg py-2 px-2 text-[13px] font-bold outline-none focus:ring-2 focus:ring-slate-400 transition-all text-center`}
+                        />
+                        {suffix && <span className="absolute right-1.5 bottom-0.5 text-[7px] font-black text-slate-400 uppercase">{suffix}</span>}
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        };
 
         function App() {
             const load = (key, def) => {
@@ -152,7 +176,7 @@
                     <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 px-3 h-14 flex items-center justify-between shadow-md text-white">
                         <div className="flex items-center gap-2">
                             <img src="logo.png" className="w-8 h-8 rounded-lg shadow-sm" onError={(e) => e.target.style.display='none'} />
-                            <h1 className="text-sm font-black tracking-tighter uppercase">DruckKosten <span className="text-slate-400 text-[10px]">V1.9.9.1</span></h1>
+                            <h1 className="text-sm font-black tracking-tighter uppercase">DruckKosten <span className="text-slate-400 text-[10px]">V1.9.9.2</span></h1>
                         </div>
                         <div className="flex gap-1.5">
                             <button onClick={exportData} title="Backup" className="bg-slate-700 p-2 rounded-lg transition-all hover:bg-slate-600"><Icon name="save" size={16} /></button>
@@ -217,7 +241,7 @@
                                             <div className="md:col-span-8 grid grid-cols-3 md:grid-cols-4 gap-2 items-end">
                                                 <InlineInput label="Flasche" value={mat.state.bottleSize} onChange={v => mat.set({...mat.state, bottleSize: v})} suffix="g" />
                                                 <InlineInput label="Preis" value={mat.state.price} onChange={v => mat.set({...mat.state, price: v})} suffix="€" />
-                                                <InlineInput label="Druck" value={mat.state.used} onChange={v => mat.set({...mat.state, used: v})} suffix="g" />
+                                                <InlineInput label={mat.type === 'uv' ? "Verbrauch" : "Druck"} value={mat.state.used} onChange={v => mat.set({...mat.state, used: v})} suffix="g" />
                                                 <button onClick={() => mat.set({...mat.state, active: !mat.state.active})} className={`h-10 rounded-lg flex items-center justify-center transition-all ${mat.state.active ? 'bg-slate-800 text-white' : 'bg-slate-400 text-slate-600'}`}><Icon name="power" size={18} /></button>
                                             </div>
                                         </div>
@@ -294,7 +318,7 @@
                         </div>
                     </main>
                     <footer className="mt-auto py-6 text-center text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-300/30 border-t border-slate-400/20">
-                        © {new Date().getFullYear()} Marcus Hörnemann — V1.9.9.1
+                        © {new Date().getFullYear()} Marcus Hörnemann — V1.9.9.2
                     </footer>
                 </div>
             );
